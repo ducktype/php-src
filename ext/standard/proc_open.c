@@ -258,10 +258,26 @@ PHP_FUNCTION(proc_terminate)
 	}
 
 #ifdef PHP_WIN32
-	if (TerminateProcess(proc->childHandle, 255)) {
-		RETURN_TRUE;
+	// Special WIN32 handling with SIGUSER1 and SIGUSR2 to keep BC
+	// fallback to TerminateProcess()
+	if(sig_no == SIGUSR1) {
+		if (GenerateConsoleCtrlEvent(CTRL_C_EVENT, proc->child)) {
+			RETURN_TRUE;
+		} else {
+			RETURN_FALSE;
+		}
+	} else if(sig_no == SIGUSR1) {
+		if (GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, proc->child)) {
+			RETURN_TRUE;
+		} else {
+			RETURN_FALSE;
+		}
 	} else {
-		RETURN_FALSE;
+		if (TerminateProcess(proc->childHandle, 255)) {
+			RETURN_TRUE;
+		} else {
+			RETURN_FALSE;
+		}
 	}
 #else
 	if (kill(proc->child, sig_no) == 0) {
@@ -733,6 +749,11 @@ PHP_FUNCTION(proc_open)
 		php_error_docref(NULL, E_WARNING, "Command conversion failed");
 		goto exit_fail;
 	}
+
+	//alloc a new console for the child process to allow sending ctrl+c to this specific process and descendants
+	//the process group id required by GenerateConsoleCtrlEvent() is the same as process id returned by CreateProcessW()
+	//pi->dwProcessId
+	dwCreateFlags |= CREATE_NEW_CONSOLE;
 
 	if (bypass_shell) {
 		newprocok = CreateProcessW(NULL, cmdw, &security, &security, TRUE, dwCreateFlags, envpw, cwdw, &si, &pi);
