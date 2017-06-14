@@ -29,6 +29,8 @@
 #include "zend_closures.h"
 #include "zend_generators.h"
 
+#include "main/php_ini.h"
+
 static ZEND_FUNCTION(zend_version);
 static ZEND_FUNCTION(func_num_args);
 static ZEND_FUNCTION(func_get_arg);
