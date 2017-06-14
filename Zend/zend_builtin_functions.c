@@ -662,49 +662,17 @@ ZEND_FUNCTION(each)
    Return the current error_reporting level, and if an argument was passed - change to the new level */
 ZEND_FUNCTION(error_reporting)
 {
-	zval *err = NULL;
+	char *err;
+	int err_len;
 	int old_error_reporting;
 
-	ZEND_PARSE_PARAMETERS_START(0, 1)
-		Z_PARAM_OPTIONAL
-		Z_PARAM_ZVAL(err)
-	ZEND_PARSE_PARAMETERS_END();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &err, &err_len) == FAILURE) {
+		return;
+	}
 
 	old_error_reporting = EG(error_reporting);
-	if (ZEND_NUM_ARGS() != 0) {
-		zend_string *new_val = zval_get_string(err);
-		do {
-			zend_ini_entry *p = EG(error_reporting_ini_entry);
-
-			if (!p) {
-				p = zend_hash_find_ptr(EG(ini_directives), ZSTR_KNOWN(ZEND_STR_ERROR_REPORTING));
-				if (p) {
-					EG(error_reporting_ini_entry) = p;
-				} else {
-					break;
-				}
-			}
-			if (!p->modified) {
-				if (!EG(modified_ini_directives)) {
-					ALLOC_HASHTABLE(EG(modified_ini_directives));
-					zend_hash_init(EG(modified_ini_directives), 8, NULL, NULL, 0);
-				}
-				if (EXPECTED(zend_hash_add_ptr(EG(modified_ini_directives), ZSTR_KNOWN(ZEND_STR_ERROR_REPORTING), p) != NULL)) {
-					p->orig_value = p->value;
-					p->orig_modifiable = p->modifiable;
-					p->modified = 1;
-				}
-			} else if (p->orig_value != p->value) {
-				zend_string_release(p->value);
-			}
-
-			p->value = new_val;
-			if (Z_TYPE_P(err) == IS_LONG) {
-				EG(error_reporting) = Z_LVAL_P(err);
-			} else {
-				EG(error_reporting) = atoi(ZSTR_VAL(p->value));
-			}
-		} while (0);
+	if(ZEND_NUM_ARGS() != 0) {
+		zend_alter_ini_entry("error_reporting", sizeof("error_reporting"), err, err_len, ZEND_INI_USER, ZEND_INI_STAGE_RUNTIME);
 	}
 
 	RETVAL_LONG(old_error_reporting);
