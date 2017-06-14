@@ -662,17 +662,20 @@ ZEND_FUNCTION(each)
    Return the current error_reporting level, and if an argument was passed - change to the new level */
 ZEND_FUNCTION(error_reporting)
 {
-	char *err;
-	int err_len;
+	zval *err = NULL;
 	int old_error_reporting;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &err, &err_len) == FAILURE) {
-		return;
-	}
+	ZEND_PARSE_PARAMETERS_START(0, 1)
+		Z_PARAM_OPTIONAL
+		Z_PARAM_ZVAL(err)
+	ZEND_PARSE_PARAMETERS_END();
 
 	old_error_reporting = EG(error_reporting);
 	if(ZEND_NUM_ARGS() != 0) {
-		zend_alter_ini_entry("error_reporting", sizeof("error_reporting"), err, err_len, ZEND_INI_USER, ZEND_INI_STAGE_RUNTIME);
+		zend_string *new_val = zval_get_string(err);
+		ini_name = zend_string_init("error_reporting", sizeof("error_reporting") - 1, 0);
+		zend_alter_ini_entry(ini_name, new_val, PHP_INI_USER, PHP_INI_STAGE_RUNTIME):
+		zend_string_release(ini_name);
 	}
 
 	RETVAL_LONG(old_error_reporting);
