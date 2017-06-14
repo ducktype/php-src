@@ -673,8 +673,9 @@ ZEND_FUNCTION(error_reporting)
 	old_error_reporting = EG(error_reporting);
 	if(ZEND_NUM_ARGS() != 0) {
 		zend_string *new_val = zval_get_string(err);
+		zend_string *ini_name;
 		ini_name = zend_string_init("error_reporting", sizeof("error_reporting") - 1, 0);
-		zend_alter_ini_entry(ini_name, new_val, PHP_INI_USER, PHP_INI_STAGE_RUNTIME):
+		zend_alter_ini_entry(ini_name, new_val, PHP_INI_USER, PHP_INI_STAGE_RUNTIME);
 		zend_string_release(ini_name);
 	}
 
