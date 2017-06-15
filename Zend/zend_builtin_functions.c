@@ -29,8 +29,6 @@
 #include "zend_closures.h"
 #include "zend_generators.h"
 
-#include "main/php_ini.h"
-
 static ZEND_FUNCTION(zend_version);
 static ZEND_FUNCTION(func_num_args);
 static ZEND_FUNCTION(func_get_arg);
@@ -677,7 +675,7 @@ ZEND_FUNCTION(error_reporting)
 		zend_string *new_val = zval_get_string(err);
 		zend_string *ini_name;
 		ini_name = zend_string_init("error_reporting", sizeof("error_reporting") - 1, 0);
-		zend_alter_ini_entry(ini_name, new_val, PHP_INI_USER, PHP_INI_STAGE_RUNTIME);
+		zend_alter_ini_entry(ini_name, new_val, ZEND_INI_USER, ZEND_INI_STAGE_RUNTIME);
 		zend_string_release(ini_name);
 	}
 
