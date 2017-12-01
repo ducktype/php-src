@@ -20,6 +20,12 @@ cache:
         - c:\build-cache
         - c:\build-cache\sdk -> .appveyor.yml
 
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 environment:
         PHP_BUILD_CACHE_BASE_DIR: c:\build-cache  
         PHP_BUILD_OBJ_DIR: c:\obj
